@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Profile - Smart Hostel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-building-gear"></i> <span>SmartHostel</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/admin/students}"><i class="bi bi-people"></i> Students</a>
+            <a th:href="@{/admin/rooms}"><i class="bi bi-door-open"></i> Rooms</a>
+            <a th:href="@{/admin/allocations}"><i class="bi bi-diagram-3"></i> Allocations</a>
+            <a th:href="@{/admin/waiting-list}"><i class="bi bi-hourglass-split"></i> Waiting List</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/admin/leaves}"><i class="bi bi-calendar2-check"></i> Leave Requests</a>
+            <a th:href="@{/admin/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/admin/medical}"><i class="bi bi-heart-pulse"></i> Medical</a>
+            <a th:href="@{/admin/fees}"><i class="bi bi-cash-stack"></i> Fee Management</a>
+            <a th:href="@{/admin/notices}"><i class="bi bi-megaphone"></i> Notices</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/admin/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/admin/mess}"><i class="bi bi-cup-hot"></i> Mess & Demand</a>
+            <a th:href="@{/admin/food-waste}"><i class="bi bi-trash3"></i> Food Waste</a>
+            <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a th:href="@{/admin/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP NAV HEADER -->
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Admin Profile</h4>
+                <span class="breadcrumb-sub">Administrator Information & System Activity</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="theme-toggle-btn btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                    <span class="theme-label small">Dark Mode</span>
+                </button>
+                <a th:href="@{/admin/notifications}" class="btn btn-secondary btn-sm position-relative">
+                    <i class="bi bi-bell fs-6"></i>
+                </a>
+                <div class="d-flex align-items-center gap-2 border-start border-secondary ps-3">
+                    <div class="user-avatar-pill">A</div>
+                    <div>
+                        <div class="fw-semibold text-white small" th:text="${admin != null ? admin.fullName : 'Chief Administrator'}">Chief Administrator</div>
+                        <span class="badge bg-primary px-2 py-0.5">ADMIN</span>
+                    </div>
+                </div>
+                <form th:action="@{/logout}" method="post" class="m-0 ms-2">
+                    <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="container-fluid px-4 pb-5">
+            <!-- ALERT MESSAGES -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show my-3" role="alert">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}">Success</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show my-3" role="alert">
+                <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${errorMessage}">Error</span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- ADMIN BASIC INFORMATION CARD -->
+            <div class="glass-card p-4 my-4">
+                <div class="d-flex align-items-center gap-4 flex-wrap">
+                    <div class="stat-icon-wrapper bg-icon-primary p-3" style="width:72px; height:72px; font-size:2.2rem; border-radius: 1.25rem;">
+                        <i class="bi bi-shield-check text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-3 flex-wrap">
+                            <h3 class="fw-bold text-white mb-0" th:text="${admin != null ? admin.fullName : 'Chief Administrator'}">Chief Administrator</h3>
+                            <span class="badge bg-primary px-3 py-1">ADMINISTRATOR</span>
+                            <span class="badge bg-success px-3 py-1">ACTIVE</span>
+                        </div>
+                        <p class="text-muted mb-0 mt-1">
+                            Department: <strong class="text-cyan" th:text="${admin != null ? admin.department : 'Hostel Administration'}">Hostel Administration</strong> | 
+                            System Role: <span class="text-white">Full Access Administrator</span>
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editAdminContactModal">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Profile
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#changeAdminPasswordModal">
+                            <i class="bi bi-key me-1"></i> Change Password
+                        </button>
+                    </div>
+                </div>
+
+                <hr class="border-secondary my-4">
+
+                <!-- 2-COLUMN ADMIN DETAILS -->
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Full Name</small>
+                        <span class="fw-bold text-white fs-6" th:text="${admin != null ? admin.fullName : 'Chief Administrator'}">Chief Administrator</span>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Username / Login ID</small>
+                        <span class="fw-bold text-cyan fs-6" th:text="${user != null ? user.username : 'admin'}">admin</span>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Official Email</small>
+                        <span class="fw-bold text-white fs-6" th:text="${admin != null ? admin.email : 'admin@smarthostel.edu'}">admin@smarthostel.edu</span>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <small class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.75rem;">Phone Number</small>
+                        <span class="fw-bold text-white fs-6" th:text="${admin != null ? admin.phone : '+91 98765 43210'}">+91 98765 43210</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMINISTRATION OVERVIEW (DYNAMIC ACTIVITY STATS) -->
+            <div class="glass-card p-4 mb-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-bar-chart-line me-2 text-primary"></i>Administration System Overview</h5>
+                <div class="row g-4">
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Total Students</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${totalStudents != null ? totalStudents : 0}">0</h3>
+                            <small class="text-success"><i class="bi bi-people me-1"></i>Active Residents</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Occupied Rooms</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${(occupiedRooms != null ? occupiedRooms : 0) + ' / ' + (totalRooms != null ? totalRooms : 0)}">0 / 0</h3>
+                            <small class="text-info"><i class="bi bi-building me-1"></i>Hostel Capacity</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Pending Leaves</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${pendingLeaves != null ? pendingLeaves : 0}">0</h3>
+                            <small class="text-warning"><i class="bi bi-clock me-1"></i>Needs Review</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Open Complaints</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${openComplaints != null ? openComplaints : 0}">0</h3>
+                            <small class="text-danger"><i class="bi bi-exclamation-octagon me-1"></i>High Priority</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Medical Requests</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${medicalRequestsCount != null ? medicalRequestsCount : 0}">0</h3>
+                            <small class="text-info"><i class="bi bi-heart-pulse me-1"></i>Healthcare</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Lost & Found Items</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${lostItemsCount != null ? lostItemsCount : 0}">0</h3>
+                            <small class="text-cyan"><i class="bi bi-box-seam me-1"></i>Item Records</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Total Notices</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${noticesCount != null ? noticesCount : 0}">0</h3>
+                            <small class="text-primary"><i class="bi bi-megaphone me-1"></i>Announcements</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary">
+                            <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Pending Fee Records</small>
+                            <h3 class="fw-bold text-white mt-1 mb-0" th:text="${pendingFeesCount != null ? pendingFeesCount : 0}">0</h3>
+                            <small class="text-warning"><i class="bi bi-cash-stack me-1"></i>Unpaid Ledgers</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN QUICK ACTIONS GRID -->
+            <div class="glass-card p-4 mb-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Admin Operational Modules</h5>
+                <div class="row g-3">
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/students}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-primary"><i class="bi bi-people"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Students</div>
+                                <small class="text-muted">Student Records</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/rooms}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-cyan"><i class="bi bi-door-open"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Rooms</div>
+                                <small class="text-muted">Room Capacity</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/allocations}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-success"><i class="bi bi-diagram-3"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Allocations</div>
+                                <small class="text-muted">Room Assigning</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/waiting-list}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-warning"><i class="bi bi-hourglass-split"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Waiting List</div>
+                                <small class="text-muted">Priority Queue</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/leaves}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-primary"><i class="bi bi-calendar2-check"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Leaves</div>
+                                <small class="text-muted">Leave Approvals</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/complaints}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-danger"><i class="bi bi-exclamation-octagon"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Complaints</div>
+                                <small class="text-muted">Ticket Management</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/medical}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-warning"><i class="bi bi-heart-pulse"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Medical</div>
+                                <small class="text-muted">Emergency Requests</small>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <a th:href="@{/admin/fees}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-success"><i class="bi bi-cash-stack"></i></div>
+                            <div>
+                                <div class="fw-bold text-white">Fees (₹)</div>
+                                <small class="text-muted">Fee Ledger & Billing</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCOUNT INFORMATION & SECURITY CARD -->
+            <div class="glass-card p-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-shield-lock me-2 text-primary"></i>Administrator Account & Security</h5>
+                <ul class="list-group list-group-flush bg-transparent">
+                    <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between py-2.5">
+                        <span class="text-muted">Administrator Username</span>
+                        <strong class="text-cyan" th:text="${user != null ? user.username : 'admin'}">admin</strong>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between py-2.5">
+                        <span class="text-muted">System Role</span>
+                        <span class="badge bg-primary px-3 py-1">ADMINISTRATOR</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between py-2.5">
+                        <span class="text-muted">Account Status</span>
+                        <span class="badge bg-success px-3 py-1">ACTIVE</span>
+                    </li>
+                    <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between py-2.5">
+                        <span class="text-muted">Security Settings</span>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#changeAdminPasswordModal">
+                            <i class="bi bi-key me-1"></i> Change Administrator Password
+                        </button>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- EDIT ADMIN PROFILE MODAL -->
+    <div class="modal fade" id="editAdminContactModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Admin Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/profile/update}" method="post">
+                    <div class="modal-body text-start">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Full Name</label>
+                            <input type="text" name="fullName" class="form-control" th:value="${admin != null ? admin.fullName : ''}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Email Address</label>
+                            <input type="email" name="email" class="form-control" th:value="${admin != null ? admin.email : ''}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Phone Number</label>
+                            <input type="text" name="phone" class="form-control" th:value="${admin != null ? admin.phone : ''}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Department</label>
+                            <input type="text" name="department" class="form-control" th:value="${admin != null ? admin.department : ''}" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE ADMIN PASSWORD MODAL -->
+    <div class="modal fade" id="changeAdminPasswordModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content glass-card border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title fw-bold text-white"><i class="bi bi-key me-2 text-warning"></i>Change Administrator Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/profile/password}" method="post">
+                    <div class="modal-body text-start">
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Current Password</label>
+                            <input type="password" name="currentPassword" class="form-control" required placeholder="Enter current password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">New Password</label>
+                            <input type="password" name="newPassword" class="form-control" required minlength="4" placeholder="Enter new password">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted small">Confirm New Password</label>
+                            <input type="password" name="confirmPassword" class="form-control" required minlength="4" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-secondary">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-shield-check me-1"></i>Update Password</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

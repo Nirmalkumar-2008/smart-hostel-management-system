@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Portal - Smart Hostel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-mortarboard"></i> <span>Student Portal</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/student/dashboard}" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/student/profile}"><i class="bi bi-person"></i> My Profile</a>
+            <a th:href="@{/student/room}"><i class="bi bi-door-open"></i> My Room</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/student/leave}"><i class="bi bi-calendar-event"></i> Apply Leave</a>
+            <a th:href="@{/student/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/student/medical}"><i class="bi bi-heart-pulse"></i> Medical Request</a>
+            <a th:href="@{/student/fees}"><i class="bi bi-cash-stack"></i> My Fees</a>
+            <a th:href="@{/student/notices}"><i class="bi bi-megaphone"></i> Notice Board</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/student/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/student/mess}"><i class="bi bi-cup-hot"></i> Smart Mess</a>
+            <a th:href="@{/student/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP NAV HEADER -->
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Welcome back, <span th:text="${student != null ? student.fullName : 'Student'}">Student</span></h4>
+                <span class="breadcrumb-sub">Student Code: <strong class="text-cyan" th:text="${student != null ? student.studentCode : 'STU1001'}">STU1001</strong> | Course: <span th:text="${student != null ? student.course : 'N/A'}">CS</span></span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="theme-toggle-btn btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                    <span class="theme-label small">Dark Mode</span>
+                </button>
+                <a th:href="@{/student/notifications}" class="btn btn-secondary btn-sm position-relative">
+                    <i class="bi bi-bell fs-6"></i>
+                    <span id="unreadNotificationBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
+                </a>
+                <div class="d-flex align-items-center gap-2 border-start border-secondary ps-3">
+                    <div class="user-avatar-pill bg-gradient">S</div>
+                    <div>
+                        <div class="fw-semibold text-white small" th:text="${student != null ? student.fullName : 'Student Name'}">Student Name</div>
+                        <span class="badge bg-info text-dark px-2 py-0.5">STUDENT</span>
+                    </div>
+                </div>
+                <form th:action="@{/logout}" method="post" class="m-0 ms-2">
+                    <button type="submit" class="btn btn-outline-danger btn-sm d-flex align-items-center gap-1">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <main id="main-content">
+            <div class="container-fluid px-4">
+            <!-- METRIC CARDS -->
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted fw-semibold text-uppercase">Allocated Room</small>
+                                <h3 class="fw-bold text-white mt-2 mb-0" th:text="${allocatedRoom != null ? 'Room ' + allocatedRoom.roomNumber : 'Waiting List'}">Room A-101</h3>
+                                <small class="text-cyan fw-medium" th:text="${allocatedRoom != null ? 'Block: ' + allocatedRoom.block : 'Priority Queue'}">Block A</small>
+                            </div>
+                            <div class="stat-icon-wrapper bg-icon-cyan">
+                                <i class="bi bi-door-open"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted fw-semibold text-uppercase">Fee Due Balance</small>
+                                <h3 class="fw-bold text-white mt-2 mb-0" th:text="${pendingFeeAmount != null ? '₹' + #numbers.formatDecimal(pendingFeeAmount, 1, 'COMMA', 0, 'POINT') : '₹0'}">₹0</h3>
+                                <small class="text-warning fw-medium"><i class="bi bi-cash"></i> Hostel Ledger</small>
+                            </div>
+                            <div class="stat-icon-wrapper bg-icon-primary">
+                                <i class="bi bi-cash-stack"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted fw-semibold text-uppercase">My Leave Requests</small>
+                                <h3 class="fw-bold text-white mt-2 mb-0" th:text="${myLeavesCount != null ? myLeavesCount : 0}">0</h3>
+                                <small class="text-success fw-medium"><i class="bi bi-calendar2-check"></i> Applications</small>
+                            </div>
+                            <div class="stat-icon-wrapper bg-icon-success">
+                                <i class="bi bi-calendar-event"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="glass-card p-4 h-100">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-muted fw-semibold text-uppercase">Open Complaints</small>
+                                <h3 class="fw-bold text-white mt-2 mb-0" th:text="${myComplaintsCount != null ? myComplaintsCount : 0}">0</h3>
+                                <small class="text-danger fw-medium"><i class="bi bi-exclamation-triangle"></i> Maintenance Tickets</small>
+                            </div>
+                            <div class="stat-icon-wrapper bg-icon-danger">
+                                <i class="bi bi-exclamation-octagon"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QUICK ACTIONS GRID -->
+            <div class="glass-card p-4 mb-4">
+                <h5 class="fw-bold text-white mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Student Portal Actions</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a th:href="@{/student/leave}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-primary">
+                                <i class="bi bi-calendar-plus"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">Apply for Leave</div>
+                                <small class="text-muted">Out-station gate pass</small>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-3">
+                        <a th:href="@{/student/complaints}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-danger">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">Report Issue</div>
+                                <small class="text-muted">Maintenance complaint</small>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-3">
+                        <a th:href="@{/student/lost-found}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-cyan">
+                                <i class="bi bi-search-heart"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">Report Lost Item</div>
+                                <small class="text-muted">AI similarity matching</small>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="col-md-3">
+                        <a th:href="@{/student/fees}" class="btn btn-secondary w-100 p-3 text-start d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-warning">
+                                <i class="bi bi-receipt"></i>
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">View Fees (₹)</div>
+                                <small class="text-muted">Invoices & payments</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RECENT ANNOUNCEMENTS -->
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-megaphone me-2 text-cyan"></i>Recent Hostel Announcements</h5>
+                    <a th:href="@{/student/notices}" class="btn btn-outline-primary btn-sm">View All Notices</a>
+                </div>
+                <div class="row g-3" th:if="${recentNotices != null && !recentNotices.empty}">
+                    <div th:each="n : ${recentNotices}" class="col-md-6">
+                        <div class="p-3 rounded-3 bg-dark border border-secondary h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold text-white" th:text="${n.title}">Notice Title</span>
+                                <span class="badge bg-info text-dark" th:text="${n.category}">GENERAL</span>
+                            </div>
+                            <p class="text-muted small mb-2" th:text="${n.content}">Notice content body...</p>
+                            <small class="text-secondary"><i class="bi bi-clock me-1"></i>Posted: <span th:text="${n.createdDate}">Date</span></small>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${recentNotices == null || recentNotices.empty}" class="text-center py-4 text-muted">
+                    <i class="bi bi-bell-slash fs-3 d-block mb-1"></i> No active hostel notices at this time.
+                </div>
+            </div>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

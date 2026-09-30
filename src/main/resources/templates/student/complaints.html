@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Complaints & Issues - Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-mortarboard"></i> <span>Student Portal</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/student/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/student/profile}"><i class="bi bi-person"></i> My Profile</a>
+            <a th:href="@{/student/room}"><i class="bi bi-door-open"></i> My Room</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/student/leave}"><i class="bi bi-calendar-event"></i> Apply Leave</a>
+            <a th:href="@{/student/complaints}" class="active"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/student/medical}"><i class="bi bi-heart-pulse"></i> Medical Request</a>
+            <a th:href="@{/student/fees}"><i class="bi bi-cash-stack"></i> My Fees</a>
+            <a th:href="@{/student/notices}"><i class="bi bi-megaphone"></i> Notice Board</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/student/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/student/mess}"><i class="bi bi-cup-hot"></i> Smart Mess</a>
+            <a th:href="@{/student/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Lodge Complaint / Maintenance Ticket</h4>
+                <p class="text-muted small mb-0">Automatic Algorithmic Escalation System</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="theme-toggle-btn">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                    <span class="theme-label small">Dark Mode</span>
+                </button>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#submitComplaintModal"><i class="bi bi-plus-circle me-1"></i>Report New Issue</button>
+            </div>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div class="glass-card p-4">
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Ticket ID</th>
+                            <th>Category</th>
+                            <th>Title & Location</th>
+                            <th>Severity</th>
+                            <th>Priority Badge</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${complaints}">
+                            <td th:text="'#CMP-' + ${c.id}">#CMP-1</td>
+                            <td class="fw-semibold text-info" th:text="${c.category}">PLUMBING</td>
+                            <td>
+                                <strong th:text="${c.title}">Water Leakage</strong><br>
+                                <small class="text-muted" th:text="${c.location}">Room A101</small>
+                            </td>
+                            <td th:text="${c.severityScore} + '/10'">8/10</td>
+                            <td>
+                                <span th:class="'badge badge-priority-' + ${#strings.toLowerCase(c.calculatedPriority)}" th:text="${c.calculatedPriority}">HIGH</span>
+                            </td>
+                            <td th:text="${c.status}">OPEN</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Complaint Modal -->
+    <div class="modal fade" id="submitComplaintModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Report New Maintenance Issue</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/student/complaints/submit}" method="post">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Category</label>
+                            <select name="category" class="form-select" required>
+                                <option value="PLUMBING">PLUMBING</option>
+                                <option value="ELECTRICAL">ELECTRICAL</option>
+                                <option value="FURNITURE">FURNITURE</option>
+                                <option value="CLEANLINESS">CLEANLINESS</option>
+                                <option value="INTERNET">INTERNET</option>
+                                <option value="SECURITY">SECURITY</option>
+                                <option value="OTHER">OTHER</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Issue Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="Room A101 / Floor 2 Washroom" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small text-muted">Issue Title</label>
+                            <input type="text" name="title" class="form-control" placeholder="Short description of problem" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small text-muted">Detailed Description</label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Provide complete context..." required></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Affected Students Count</label>
+                            <input type="number" name="affectedStudentsCount" class="form-control" value="1" min="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small text-muted">Severity Score (1 - 10)</label>
+                            <input type="number" name="severityScore" class="form-control" value="5" min="1" max="10" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Ticket</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

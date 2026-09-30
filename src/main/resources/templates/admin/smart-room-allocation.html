@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Room Allocation - Admin Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-building-gear"></i> <span>SmartHostel</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/admin/students}"><i class="bi bi-people"></i> Students</a>
+            <a th:href="@{/admin/rooms}"><i class="bi bi-door-open"></i> Rooms</a>
+            <a th:href="@{/admin/allocations}"><i class="bi bi-diagram-3"></i> Allocations</a>
+            <a th:href="@{/admin/smart-room-allocation}" class="active"><i class="bi bi-cpu"></i> Smart Allocation</a>
+            <a th:href="@{/admin/waiting-list}"><i class="bi bi-hourglass-split"></i> Waiting List</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/admin/leaves}"><i class="bi bi-calendar2-check"></i> Leave Requests</a>
+            <a th:href="@{/admin/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/admin/medical}"><i class="bi bi-heart-pulse"></i> Medical</a>
+            <a th:href="@{/admin/fees}"><i class="bi bi-cash-stack"></i> Fee Management</a>
+            <a th:href="@{/admin/notices}"><i class="bi bi-megaphone"></i> Notices</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/admin/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/admin/mess}"><i class="bi bi-cup-hot"></i> Smart Mess</a>
+            <a th:href="@{/admin/food-waste}"><i class="bi bi-trash3"></i> Food Waste</a>
+            <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a th:href="@{/admin/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP NAV -->
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Smart Room Allocation & Recommendation</h4>
+                <p class="text-muted small mb-0">Intelligent Multi-Factor Room Suitability Engine</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button type="button" class="theme-toggle-btn btn btn-outline-secondary btn-sm d-flex align-items-center gap-2">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                    <span class="theme-label small">Dark Mode</span>
+                </button>
+            </div>
+        </div>
+
+        <main id="main-content">
+            <!-- ALERT MESSAGES -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}">Success</span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}">Error</span>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- STUDENT SELECTION & PREFERENCES CARD -->
+        <div class="glass-card p-4 mb-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Student Selection & Allocation Setup</h5>
+            
+            <form th:action="@{/admin/smart-room-allocation}" method="get" class="row g-3 align-items-end mb-3">
+                <div class="col-md-5">
+                    <label class="form-label small text-muted fw-semibold">Select Student <span class="text-danger">*</span></label>
+                    <select name="studentId" class="form-select form-select-lg" onchange="this.form.submit()">
+                        <option value="">-- Select Student for Allocation --</option>
+                        <option th:each="s : ${students}" 
+                                th:value="${s.id}" 
+                                th:selected="${selectedStudent != null and selectedStudent.id == s.id}"
+                                th:text="${s.fullName} + ' (' + ${s.studentCode} + ' - ' + ${s.course} + ', Year ' + ${s.yearOfStudy} + ')'">John Doe (STU1001)</option>
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-semibold">Pref Block</label>
+                    <select name="block" class="form-select">
+                        <option value="">Any Block</option>
+                        <option th:each="b : ${distinctBlocks}" 
+                                th:value="${b}" 
+                                th:selected="${prefBlock == b}" 
+                                th:text="${b}">Vaigai</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label small text-muted fw-semibold">Pref Room Type</label>
+                    <select name="roomType" class="form-select">
+                        <option value="">Any Type</option>
+                        <option value="SINGLE" th:selected="${prefRoomType != null and prefRoomType.name() == 'SINGLE'}">SINGLE (1 Sharing)</option>
+                        <option value="DOUBLE" th:selected="${prefRoomType != null and prefRoomType.name() == 'DOUBLE'}">DOUBLE (2 Sharing)</option>
+                        <option value="TRIPLE" th:selected="${prefRoomType != null and prefRoomType.name() == 'TRIPLE'}">TRIPLE (3 Sharing)</option>
+                        <option value="QUAD" th:selected="${prefRoomType != null and prefRoomType.name() == 'QUAD'}">QUAD (4 Sharing)</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100 py-2"><i class="bi bi-cpu me-1"></i>Find Best Rooms</button>
+                </div>
+            </form>
+
+            <!-- SELECTED STUDENT INFORMATION BANNER -->
+            <div th:if="${selectedStudent != null}" class="p-3 bg-tertiary rounded-3 border border-secondary">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon-wrapper bg-icon-primary">
+                                <i class="bi bi-person-fill fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold text-white mb-0" th:text="${selectedStudent.fullName}">John Doe</h5>
+                                <span class="badge bg-secondary me-2" th:text="${selectedStudent.studentCode}">STU1001</span>
+                                <span class="badge bg-info text-dark me-2" th:text="${selectedStudent.course}">CSE</span>
+                                <span class="badge bg-warning text-dark me-2" th:text="'Year ' + ${selectedStudent.yearOfStudy}">Year 2</span>
+                                <span class="badge bg-outline text-white" th:text="${selectedStudent.gender}">MALE</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div th:if="${currentRoom != null}" class="badge bg-warning text-dark p-2 fs-6">
+                            <i class="bi bi-door-open-fill me-1"></i>Currently Assigned: <span th:text="${currentRoom.roomNumber}">A-204</span>
+                        </div>
+                        <div th:if="${currentRoom == null}" class="badge bg-success p-2 fs-6">
+                            <i class="bi bi-check-circle-fill me-1"></i>Status: Unassigned
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECOMMENDED ROOMS SECTION -->
+        <div th:if="${selectedStudent != null}">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="bi bi-stars me-2 text-warning"></i>Ranked Room Recommendations</h5>
+                <span class="badge bg-secondary" th:text="${recommendations.size()} + ' Eligible Rooms Available'">0 Rooms</span>
+            </div>
+
+            <!-- RECOMMENDATIONS GRID -->
+            <div class="row g-4 mb-4" th:if="${!recommendations.isEmpty()}">
+                <div th:each="rec, iter : ${recommendations}" class="col-md-6 col-lg-4">
+                    <div class="glass-card p-4 h-100 border-secondary d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- CARD HEADER: RANK & SUITABILITY -->
+                            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-secondary pb-3">
+                                <div>
+                                    <span class="text-muted small fw-bold" th:text="'#' + ${iter.index + 1} + ' RECOMMENDATION'">#1</span>
+                                    <h4 class="fw-bold text-white mb-0" th:text="'Room ' + ${rec.room.roomNumber}">Room A-204</h4>
+                                    <small class="text-muted" th:text="'Block ' + ${rec.room.block} + ' • Floor ' + ${rec.room.floor}">Block A • Floor 2</small>
+                                </div>
+                                <div class="text-end">
+                                    <span th:class="'badge fs-6 ' + ${rec.badgeClass}" th:text="${rec.matchCategory}">92% Excellent</span>
+                                    <h3 class="fw-bold text-white mb-0 mt-1" th:text="${rec.roundedScore} + '%'">92%</h3>
+                                </div>
+                            </div>
+
+                            <!-- ROOM CAPACITY METRICS -->
+                            <div class="row g-2 text-center mb-3">
+                                <div class="col-4">
+                                    <div class="p-2 bg-tertiary rounded">
+                                        <small class="text-muted d-block">CAPACITY</small>
+                                        <strong class="text-white" th:text="${rec.room.capacity}">4</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 bg-tertiary rounded">
+                                        <small class="text-muted d-block">OCCUPIED</small>
+                                        <strong class="text-cyan" th:text="${rec.room.currentOccupancy}">2</strong>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="p-2 bg-tertiary rounded">
+                                        <small class="text-muted d-block">AVAILABLE</small>
+                                        <strong class="text-success fw-bold" th:text="${rec.room.availableBeds}">2 Beds</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- REASONS LIST -->
+                            <div class="mb-3">
+                                <small class="text-muted fw-semibold d-block mb-2">Why this room?</small>
+                                <ul class="list-group list-group-flush bg-transparent">
+                                    <li th:each="pos : ${rec.positiveReasons}" class="list-group-item bg-transparent text-white px-0 py-1 border-0 small d-flex align-items-center gap-2">
+                                        <i class="bi bi-check-circle-fill text-success"></i>
+                                        <span th:text="${pos}">Available beds</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="pt-3 border-top border-secondary d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info btn-sm flex-fill" data-bs-toggle="modal" th:data-bs-target="'#detailsModal' + ${rec.room.id}">
+                                <i class="bi bi-eye me-1"></i>View Details
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm flex-fill" data-bs-toggle="modal" th:data-bs-target="'#assignModal' + ${rec.room.id}">
+                                <i class="bi bi-check2-circle me-1"></i>Assign Room
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EMPTY STATE FOR RECOMMENDATIONS -->
+            <div th:if="${recommendations.isEmpty()}" class="glass-card p-5 text-center">
+                <i class="bi bi-building-x fs-1 text-warning d-block mb-3"></i>
+                <h4 class="fw-bold text-white mb-2">No compatible rooms are currently available</h4>
+                <p class="text-muted small mb-2">All available rooms are either occupied, unavailable, or not compatible with the student's hostel eligibility.</p>
+                <div class="badge bg-warning text-dark p-2 mt-2">
+                    <i class="bi bi-hourglass-split me-1"></i>Student remains on the Waiting List until a compatible room becomes available.
+                </div>
+            </div>
+        </div>
+
+        <!-- NO STUDENT SELECTED PROMPT -->
+        <div th:if="${selectedStudent == null}" class="glass-card p-5 text-center">
+            <div class="stat-icon-wrapper bg-icon-primary mx-auto mb-3" style="width: 70px; height: 70px; font-size: 2rem;">
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h4 class="fw-bold text-white mb-2">Select a Student to Generate Recommendations</h4>
+            <p class="text-muted small mb-0">Choose a student from the dropdown menu above or from the Waiting List to analyze room compatibility scores.</p>
+        </div>
+
+        <!-- DYNAMIC MODALS: VIEW DETAILS & ASSIGN CONFIRMATION -->
+        <div th:if="${selectedStudent != null}" th:each="rec : ${recommendations}">
+            
+            <!-- VIEW DETAILS MODAL -->
+            <div class="modal fade" th:id="'detailsModal' + ${rec.room.id}" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title fw-bold text-white">
+                                <i class="bi bi-info-circle text-info me-2"></i>Room <span th:text="${rec.room.roomNumber}">A-204</span> Details & Occupants
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">ROOM NUMBER</small>
+                                    <strong class="text-white fs-5" th:text="${rec.room.roomNumber}">A-204</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">BLOCK & FLOOR</small>
+                                    <strong class="text-cyan fs-5" th:text="'Block ' + ${rec.room.block} + ' (Floor ' + ${rec.room.floor} + ')'">Block A (Floor 2)</strong>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">ROOM TYPE</small>
+                                    <span class="badge bg-info text-dark fs-6" th:text="${rec.room.roomType}">DOUBLE</span>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted d-block">SUITABILITY SCORE</small>
+                                    <span th:class="'badge fs-6 ' + ${rec.badgeClass}" th:text="${rec.roundedScore} + '% (' + ${rec.matchCategory} + ')'">92%</span>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <small class="text-muted fw-semibold d-block mb-2">CURRENT OCCUPANTS</small>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>STUDENT NAME</th>
+                                                <th>COURSE / DEPT</th>
+                                                <th>YEAR</th>
+                                                <th>GENDER</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="occ : ${rec.currentOccupants}">
+                                                <td class="text-white fw-bold" th:text="${occ.fullName}">Student Name</td>
+                                                <td><span class="badge bg-info text-dark" th:text="${occ.course}">CSE</span></td>
+                                                <td class="text-white" th:text="'Year ' + ${occ.yearOfStudy}">Year 2</td>
+                                                <td class="text-muted" th:text="${occ.gender}">MALE</td>
+                                            </tr>
+                                            <tr th:if="${rec.currentOccupants.isEmpty()}">
+                                                <td colspan="4" class="text-center text-muted py-3">Room is currently empty.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div>
+                                <small class="text-muted fw-semibold d-block mb-2">RECOMMENDATION RATIONALE</small>
+                                <div class="p-3 bg-tertiary rounded">
+                                    <ul class="mb-0 ps-3 text-white small">
+                                        <li th:each="pos : ${rec.positiveReasons}" th:text="${pos}">Reason</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-secondary">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ASSIGN ROOM CONFIRMATION MODAL -->
+            <div class="modal fade" th:id="'assignModal' + ${rec.room.id}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header border-secondary">
+                            <h5 class="modal-title fw-bold text-white">
+                                <i class="bi bi-check2-square text-success me-2"></i>Confirm Room Assignment
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form th:action="@{/admin/smart-room-allocation/assign}" method="post">
+                            <input type="hidden" name="studentId" th:value="${selectedStudent.id}">
+                            <input type="hidden" name="roomId" th:value="${rec.room.id}">
+
+                            <div class="modal-body p-4">
+                                <div class="text-center mb-4">
+                                    <i class="bi bi-door-open text-primary fs-1 d-block mb-2"></i>
+                                    <h5 class="fw-bold text-white mb-1">Assign Room <span class="text-cyan" th:text="${rec.room.roomNumber}">A-204</span>?</h5>
+                                    <p class="text-muted small mb-0">Re-validates capacity and updates allocation records atomically.</p>
+                                </div>
+
+                                <div class="p-3 bg-tertiary rounded-3 mb-3 border border-secondary">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Student:</span>
+                                        <strong class="text-white" th:text="${selectedStudent.fullName}">John Doe</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Target Room:</span>
+                                        <strong class="text-cyan" th:text="${rec.room.roomNumber} + ' (Block ' + ${rec.room.block} + ')'">A-204</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted">Available Beds:</span>
+                                        <strong class="text-success" th:text="${rec.room.availableBeds} + ' Beds'">2 Beds</strong>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted">Suitability Score:</span>
+                                        <span th:class="'badge ' + ${rec.badgeClass}" th:text="${rec.roundedScore} + '%'">92%</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label small text-muted fw-semibold">Allocation Notes (Optional)</label>
+                                    <input type="text" name="notes" class="form-control" placeholder="e.g. Recommended by Smart Allocation Engine">
+                                </div>
+                            </div>
+                            <div class="modal-footer border-secondary">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-success px-4"><i class="bi bi-check-circle me-1"></i>Confirm Assignment</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

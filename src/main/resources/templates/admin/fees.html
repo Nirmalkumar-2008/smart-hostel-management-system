@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fee Management - Smart Hostel</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-building-gear"></i> <span>SmartHostel</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/admin/students}"><i class="bi bi-people"></i> Students</a>
+            <a th:href="@{/admin/rooms}"><i class="bi bi-door-open"></i> Rooms</a>
+            <a th:href="@{/admin/allocations}"><i class="bi bi-diagram-3"></i> Allocations</a>
+            <a th:href="@{/admin/waiting-list}"><i class="bi bi-hourglass-split"></i> Waiting List</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/admin/leaves}"><i class="bi bi-calendar2-check"></i> Leave Requests</a>
+            <a th:href="@{/admin/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/admin/medical}"><i class="bi bi-heart-pulse"></i> Medical</a>
+            <a th:href="@{/admin/fees}" class="active"><i class="bi bi-cash-stack"></i> Fee Management</a>
+            <a th:href="@{/admin/notices}"><i class="bi bi-megaphone"></i> Notices</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/admin/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/admin/mess}"><i class="bi bi-cup-hot"></i> Mess & Demand</a>
+            <a th:href="@{/admin/food-waste}"><i class="bi bi-trash3"></i> Food Waste</a>
+            <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a th:href="@{/admin/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+        <!-- TOP NAV HEADER -->
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Fee & Ledger Management</h4>
+                <span class="breadcrumb-sub">Services / Fee Invoices & Payment Ledger</span>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFeeModal">
+                    <i class="bi bi-plus-circle me-1"></i>Issue Fee Invoice
+                </button>
+            </div>
+        </div>
+
+        <div class="container-fluid px-4">
+            <!-- ALERTS -->
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- TABLE CONTAINER -->
+            <div class="glass-card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="bi bi-receipt me-2 text-primary"></i>Student Fee Ledger & Invoices (INR ₹)</h5>
+                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFeeModal">
+                        <i class="bi bi-plus-circle me-1"></i>Issue New Invoice
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom">
+                        <thead>
+                            <tr>
+                                <th>Invoice Code</th>
+                                <th>Student</th>
+                                <th>Fee Type</th>
+                                <th>Total Amount (₹)</th>
+                                <th>Paid Amount (₹)</th>
+                                <th>Balance Due (₹)</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="f : ${fees}">
+                                <td class="fw-semibold text-primary" th:text="${f.feeCode}">FEE-1001</td>
+                                <td th:text="${f.studentName != null ? f.studentName : 'Student #' + f.studentId}">Student</td>
+                                <td th:text="${f.feeType}">HOSTEL_RENT</td>
+                                <td class="fw-semibold text-white" th:text="'₹' + ${#numbers.formatDecimal(f.totalAmount, 1, 'COMMA', 0, 'POINT')}">₹5,000</td>
+                                <td class="text-success fw-semibold" th:text="'₹' + ${#numbers.formatDecimal(f.totalPaidAmount, 1, 'COMMA', 0, 'POINT')}">₹0</td>
+                                <td class="text-danger fw-semibold" th:text="'₹' + ${#numbers.formatDecimal(f.remainingBalance, 1, 'COMMA', 0, 'POINT')}">₹5,000</td>
+                                <td th:text="${f.dueDate}">Due Date</td>
+                                <td>
+                                    <span th:class="'badge ' + (${f.status.name() == 'PAID'} ? 'bg-success' : (${f.status.name() == 'PARTIALLY_PAID'} ? 'bg-warning' : 'bg-danger'))" th:text="${f.status}">UNPAID</span>
+                                </td>
+                                <td>
+                                    <button th:if="${f.status.name() != 'PAID'}" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#payModal' + ${f.id}">Record Payment</button>
+                                </td>
+                            </tr>
+                            <tr th:if="${fees == null || fees.empty}">
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    <i class="bi bi-receipt fs-3 d-block mb-1"></i> No fee invoices issued yet.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Fee Modal -->
+    <div class="modal fade" id="createFeeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-receipt me-2"></i>Issue Fee Invoice</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/fees/create}" method="post">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Invoice Code <span class="text-danger">*</span></label>
+                            <input type="text" name="feeCode" class="form-control" placeholder="FEE-2026-01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Student <span class="text-danger">*</span></label>
+                            <select name="studentId" class="form-select" required>
+                                <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.studentCode} + ' - ' + ${s.fullName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Fee Type <span class="text-danger">*</span></label>
+                            <select name="feeType" class="form-select" required>
+                                <option value="HOSTEL_RENT">HOSTEL_RENT</option>
+                                <option value="MESS_FEE">MESS_FEE</option>
+                                <option value="SECURITY_DEPOSIT">SECURITY_DEPOSIT</option>
+                                <option value="MAINTENANCE">MAINTENANCE</option>
+                                <option value="FINE">FINE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Amount (₹ INR) <span class="text-danger">*</span></label>
+                            <input type="number" name="amount" class="form-control" value="5000" step="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Due Date <span class="text-danger">*</span></label>
+                            <input type="date" name="dueDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Academic Term</label>
+                            <input type="text" name="academicTerm" class="form-control" value="Spring 2026" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Create Invoice</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Payment Modals -->
+    <div th:each="f : ${fees}" class="modal fade" th:id="'payModal' + ${f.id}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-cash-coin me-2"></i>Record Payment for Invoice <span th:text="${f.feeCode}">FEE-1001</span></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/fees/payment}" method="post">
+                    <input type="hidden" name="feeId" th:value="${f.id}">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Amount Paid (₹ INR) <span class="text-danger">*</span></label>
+                            <input type="number" name="amountPaid" class="form-control" th:value="${f.remainingBalance}" step="1" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Payment Method <span class="text-danger">*</span></label>
+                            <select name="method" class="form-select" required>
+                                <option value="UPI" selected>UPI (GPay / PhonePe / Paytm)</option>
+                                <option value="ONLINE_BANKING">ONLINE_BANKING</option>
+                                <option value="CREDIT_CARD">CREDIT / DEBIT CARD</option>
+                                <option value="CASH">CASH</option>
+                                <option value="CHEQUE">CHEQUE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Transaction Ref / UPI Ref # <span class="text-danger">*</span></label>
+                            <input type="text" name="transactionReference" class="form-control" placeholder="e.g. UPI-99881122" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Notes</label>
+                            <input type="text" name="notes" class="form-control" placeholder="Optional payment remarks">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i>Submit Payment (₹)</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

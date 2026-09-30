@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room Management - Smart Hostel Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+    <style>
+        .stat-card {
+            border-radius: 12px;
+            padding: 1.25rem;
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid #f0f2f5;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        }
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+        .occupancy-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        .badge-status-available {
+            background-color: #e6f4ea;
+            color: #137333;
+            border: 1px solid #ceead6;
+        }
+        .badge-status-partially {
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            border: 1px solid #d2e3fc;
+        }
+        .badge-status-full {
+            background-color: #fef7e0;
+            color: #b06000;
+            border: 1px solid #feefc3;
+        }
+        .badge-status-maintenance {
+            background-color: #fce8e6;
+            color: #c5221f;
+            border: 1px solid #fad2cf;
+        }
+    </style>
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-building-gear"></i> <span>SmartHostel</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/admin/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/admin/students}"><i class="bi bi-people"></i> Students</a>
+            <a th:href="@{/admin/rooms}" class="active"><i class="bi bi-door-open"></i> Rooms</a>
+            <a th:href="@{/admin/allocations}"><i class="bi bi-diagram-3"></i> Allocations</a>
+            <a th:href="@{/admin/waiting-list}"><i class="bi bi-hourglass-split"></i> Waiting List</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/admin/leaves}"><i class="bi bi-calendar2-check"></i> Leave Requests</a>
+            <a th:href="@{/admin/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/admin/medical}"><i class="bi bi-heart-pulse"></i> Medical</a>
+            <a th:href="@{/admin/fees}"><i class="bi bi-cash-stack"></i> Fee Management</a>
+            <a th:href="@{/admin/notices}"><i class="bi bi-megaphone"></i> Notices</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/admin/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/admin/mess}"><i class="bi bi-cup-hot"></i> Mess & Demand</a>
+            <a th:href="@{/admin/food-waste}"><i class="bi bi-trash3"></i> Food Waste</a>
+            <a th:href="@{/admin/reports}"><i class="bi bi-bar-chart"></i> Reports</a>
+            <a th:href="@{/admin/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">Room Management</h4>
+                <p class="text-muted small mb-0">Manage Rooms, Capacity, Availability & Allocations</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="theme-toggle-btn">
+                    <i class="bi bi-moon-stars-fill text-primary"></i>
+                    <span class="theme-label small">Dark Mode</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#allocateModal"><i class="bi bi-person-check me-1"></i>Allocate Room</button>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRoomModal"><i class="bi bi-plus-circle me-1"></i>Add New Room</button>
+            </div>
+        </div>
+
+        <main id="main-content">
+            <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- 1. Statistics Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col">
+                <div class="stat-card d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Total Rooms</div>
+                        <h3 class="fw-bold mb-0 text-dark" th:text="${stats.totalRooms}">0</h3>
+                    </div>
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-door-open-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Available</div>
+                        <h3 class="fw-bold mb-0 text-success" th:text="${stats.availableRooms}">0</h3>
+                    </div>
+                    <div class="stat-icon bg-success-subtle text-success">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Partially Occupied</div>
+                        <h3 class="fw-bold mb-0 text-info" th:text="${stats.partiallyOccupiedRooms}">0</h3>
+                    </div>
+                    <div class="stat-icon bg-info-subtle text-info">
+                        <i class="bi bi-pie-chart-fill"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Full</div>
+                        <h3 class="fw-bold mb-0 text-warning" th:text="${stats.fullRooms}">0</h3>
+                    </div>
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-person-fill-lock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="stat-card d-flex align-items-center justify-content-between">
+                    <div>
+                        <div class="text-muted small fw-semibold text-uppercase">Maintenance</div>
+                        <h3 class="fw-bold mb-0 text-danger" th:text="${stats.maintenanceRooms}">0</h3>
+                    </div>
+                    <div class="stat-icon bg-danger-subtle text-danger">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Search & Filter Bar -->
+        <div class="glass-card p-3 mb-4">
+            <form th:action="@{/admin/rooms}" method="get" class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                        <input type="text" name="query" th:value="${query}" class="form-control border-start-0 ps-0" placeholder="Search by Room #, Block, or Description...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <select name="floor" class="form-select form-select-sm">
+                        <option value="">All Floors</option>
+                        <option th:each="f : ${floors}" th:value="${f}" th:text="'Floor ' + ${f}" th:selected="${floor == f}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="roomType" class="form-select form-select-sm">
+                        <option value="">All Room Types</option>
+                        <option th:each="rt : ${roomTypes}" th:value="${rt.name()}" th:text="${rt.name()}" th:selected="${roomType == rt.name()}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        <option th:each="st : ${roomStatuses}" th:value="${st.name()}" th:text="${st.name().replace('_', ' ')}" th:selected="${status == st.name()}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-funnel me-1"></i>Filter</button>
+                    <a th:href="@{/admin/rooms}" class="btn btn-outline-secondary btn-sm" title="Reset Filters"><i class="bi bi-x-circle"></i></a>
+                </div>
+            </form>
+        </div>
+
+        <!-- 3. Rooms Table Card -->
+        <div class="glass-card p-4">
+            <div class="table-responsive" th:if="${rooms != null && !rooms.empty}">
+                <table class="table table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Room Number</th>
+                            <th>Block & Floor</th>
+                            <th>Room Type</th>
+                            <th>Capacity & Occupancy</th>
+                            <th>Available Beds</th>
+                            <th>Monthly Rent</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="r : ${rooms}">
+                            <td>
+                                <div class="fw-bold text-primary" th:text="${r.roomNumber}">A101</div>
+                                <div class="small text-muted" th:text="${r.description != null ? r.description : 'Standard Room'}">Description</div>
+                            </td>
+                            <td>
+                                <span class="fw-semibold" th:text="${r.block}">Block A</span>
+                                <span class="text-muted small" th:text="' • Floor ' + ${r.floor}">• Floor 1</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border" th:text="${r.roomType}">DOUBLE</span>
+                            </td>
+                            <td style="min-width: 180px;">
+                                <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                    <span>Occupancy</span>
+                                    <span th:text="${r.currentOccupancy} + ' / ' + ${r.capacity} + ' (' + ${r.occupancyPercentage} + '%)'">1 / 2 (50%)</span>
+                                </div>
+                                <div class="occupancy-bar">
+                                    <div class="progress-bar" role="progressbar"
+                                         th:style="'width: ' + ${r.occupancyPercentage} + '%;'"
+                                         th:classappend="${r.occupancyPercentage >= 100 ? 'bg-danger' : (r.occupancyPercentage > 0 ? 'bg-info' : 'bg-success')}">
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark fw-bold border" th:text="${r.availableBeds} + ' beds'">2 beds</span>
+                            </td>
+                            <td class="fw-semibold" th:text="'₹' + ${#numbers.formatDecimal(r.baseMonthlyRent, 1, 'COMMA', 2, 'POINT')}">₹5,000.00</td>
+                            <td>
+                                <span th:if="${r.status.name() == 'AVAILABLE'}" class="badge badge-status-available">AVAILABLE</span>
+                                <span th:if="${r.status.name() == 'PARTIALLY_OCCUPIED'}" class="badge badge-status-partially">PARTIALLY OCCUPIED</span>
+                                <span th:if="${r.status.name() == 'FULL'}" class="badge badge-status-full">FULL</span>
+                                <span th:if="${r.status.name() == 'MAINTENANCE'}" class="badge badge-status-maintenance">MAINTENANCE</span>
+                                <span th:if="${r.status.name() == 'RESERVED'}" class="badge bg-secondary">RESERVED</span>
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-info" data-bs-toggle="modal" th:data-bs-target="'#viewModal' + ${r.id}" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary" data-bs-toggle="modal" th:data-bs-target="'#editModal' + ${r.id}" title="Edit Room">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" data-bs-toggle="modal" th:data-bs-target="'#deleteModal' + ${r.id}" title="Delete Room">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 4. Empty State -->
+            <div th:if="${rooms == null || rooms.empty}" class="text-center py-5">
+                <div class="mb-3">
+                    <i class="bi bi-door-closed text-muted" style="font-size: 3.5rem;"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">No Rooms Found</h5>
+                <p class="text-muted small mb-3">Add your first hostel room or try adjusting your search filters to start managing room allocations.</p>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+                    <i class="bi bi-plus-circle me-1"></i>Add New Room
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Add Room Modal -->
+    <div class="modal fade" id="addRoomModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-plus-circle me-2"></i>Add New Hostel Room</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/rooms/add}" method="post">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Room Number <span class="text-danger">*</span></label>
+                            <input type="text" name="roomNumber" class="form-control" placeholder="e.g. A105" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Block <span class="text-danger">*</span></label>
+                            <input type="text" name="block" class="form-control" placeholder="e.g. Block A" value="Block A" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Floor <span class="text-danger">*</span></label>
+                            <input type="number" name="floor" class="form-control" value="1" min="0" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Capacity <span class="text-danger">*</span></label>
+                            <input type="number" name="capacity" class="form-control" value="2" min="1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label small fw-semibold text-muted">Current Occupancy</label>
+                            <input type="number" name="currentOccupancy" class="form-control" value="0" min="0" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Room Type <span class="text-danger">*</span></label>
+                            <select name="roomType" class="form-select" required>
+                                <option value="SINGLE">SINGLE</option>
+                                <option value="DOUBLE" selected>DOUBLE</option>
+                                <option value="TRIPLE">TRIPLE</option>
+                                <option value="FOUR_SHARING">FOUR_SHARING</option>
+                                <option value="DORMITORY">DORMITORY</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-semibold text-muted">Status <span class="text-danger">*</span></label>
+                            <select name="status" class="form-select" required>
+                                <option value="AVAILABLE" selected>AVAILABLE</option>
+                                <option value="PARTIALLY_OCCUPIED">PARTIALLY OCCUPIED</option>
+                                <option value="FULL">FULL</option>
+                                <option value="MAINTENANCE">MAINTENANCE</option>
+                                <option value="RESERVED">RESERVED</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Monthly Rent (₹) <span class="text-danger">*</span></label>
+                            <input type="number" name="rent" class="form-control" value="5000" step="0.01" min="0" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Description / Amenities</label>
+                            <textarea name="description" class="form-control" rows="2" placeholder="e.g. Attached washroom, balcony view, study tables"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Room</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Per-Room Modals (View, Edit, Delete) -->
+    <div th:each="r : ${rooms}">
+        <!-- View Room Details Modal -->
+        <div class="modal fade" th:id="'viewModal' + ${r.id}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-door-open me-2"></i>Room [[${r.roomNumber}]] Details</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4 class="fw-bold mb-0 text-primary">Room [[${r.roomNumber}]]</h4>
+                            <span th:if="${r.status.name() == 'AVAILABLE'}" class="badge badge-status-available">AVAILABLE</span>
+                            <span th:if="${r.status.name() == 'PARTIALLY_OCCUPIED'}" class="badge badge-status-partially">PARTIALLY OCCUPIED</span>
+                            <span th:if="${r.status.name() == 'FULL'}" class="badge badge-status-full">FULL</span>
+                            <span th:if="${r.status.name() == 'MAINTENANCE'}" class="badge badge-status-maintenance">MAINTENANCE</span>
+                            <span th:if="${r.status.name() == 'RESERVED'}" class="badge bg-secondary">RESERVED</span>
+                        </div>
+
+                        <div class="p-3 bg-light rounded-3 mb-4">
+                            <div class="d-flex justify-content-between small fw-semibold mb-1">
+                                <span>Occupancy Progress</span>
+                                <span th:text="${r.currentOccupancy} + ' of ' + ${r.capacity} + ' Occupied (' + ${r.occupancyPercentage} + '%)'">1 of 2 Occupied (50%)</span>
+                            </div>
+                            <div class="occupancy-bar" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar"
+                                     th:style="'width: ' + ${r.occupancyPercentage} + '%;'"
+                                     th:classappend="${r.occupancyPercentage >= 100 ? 'bg-danger' : (r.occupancyPercentage > 0 ? 'bg-info' : 'bg-success')}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="text-muted small">Block</div>
+                                <div class="fw-bold" th:text="${r.block}">Block A</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Floor</div>
+                                <div class="fw-bold" th:text="'Floor ' + ${r.floor}">Floor 1</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Room Type</div>
+                                <div class="fw-bold" th:text="${r.roomType}">DOUBLE</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Available Beds</div>
+                                <div class="fw-bold text-success" th:text="${r.availableBeds} + ' beds'">1 beds</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Monthly Rent</div>
+                                <div class="fw-bold text-dark" th:text="'₹' + ${#numbers.formatDecimal(r.baseMonthlyRent, 1, 'COMMA', 2, 'POINT')}">₹5,000.00</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted small">Capacity</div>
+                                <div class="fw-bold" th:text="${r.capacity} + ' Persons'">2 Persons</div>
+                            </div>
+                            <div class="col-12" th:if="${r.description != null && !r.description.empty}">
+                                <div class="text-muted small">Description / Amenities</div>
+                                <div class="fw-semibold text-dark" th:text="${r.description}">Room description</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Room Modal -->
+        <div class="modal fade" th:id="'editModal' + ${r.id}" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-pencil me-2"></i>Edit Room [[${r.roomNumber}]]</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form th:action="@{/admin/rooms/{id}/edit(id=${r.id})}" method="post">
+                        <div class="modal-body row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Room Number <span class="text-danger">*</span></label>
+                                <input type="text" name="roomNumber" class="form-control" th:value="${r.roomNumber}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Block <span class="text-danger">*</span></label>
+                                <input type="text" name="block" class="form-control" th:value="${r.block}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-muted">Floor <span class="text-danger">*</span></label>
+                                <input type="number" name="floor" class="form-control" th:value="${r.floor}" min="0" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-muted">Capacity <span class="text-danger">*</span></label>
+                                <input type="number" name="capacity" class="form-control" th:value="${r.capacity}" min="1" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label small fw-semibold text-muted">Current Occupancy <span class="text-danger">*</span></label>
+                                <input type="number" name="currentOccupancy" class="form-control" th:value="${r.currentOccupancy}" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Room Type <span class="text-danger">*</span></label>
+                                <select name="roomType" class="form-select" required>
+                                    <option th:each="rt : ${roomTypes}" th:value="${rt.name()}" th:text="${rt.name()}" th:selected="${r.roomType == rt}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold text-muted">Status <span class="text-danger">*</span></label>
+                                <select name="status" class="form-select" required>
+                                    <option th:each="st : ${roomStatuses}" th:value="${st.name()}" th:text="${st.name().replace('_', ' ')}" th:selected="${r.status == st}"></option>
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold text-muted">Monthly Rent (₹) <span class="text-danger">*</span></label>
+                                <input type="number" name="rent" class="form-control" th:value="${r.baseMonthlyRent}" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label small fw-semibold text-muted">Description / Amenities</label>
+                                <textarea name="description" class="form-control" rows="2" th:text="${r.description}"></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Update Room</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Room Confirmation Modal -->
+        <div class="modal fade" th:id="'deleteModal' + ${r.id}" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle me-2"></i>Delete Room [[${r.roomNumber}]]</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <i class="bi bi-trash3 text-danger mb-3" style="font-size: 3rem;"></i>
+                        <h5 class="fw-bold mb-2">Are you sure you want to delete Room [[${r.roomNumber}]]?</h5>
+                        <p class="text-muted small mb-0">This operation cannot be undone. Rooms with active student allocations cannot be deleted.</p>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                        <form th:action="@{/admin/rooms/{id}/delete(id=${r.id})}" method="post">
+                            <button type="submit" class="btn btn-danger px-4"><i class="bi bi-trash me-1"></i>Delete Room</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 7. Allocate Room Modal -->
+    <div class="modal fade" id="allocateModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-check me-2"></i>Allocate Room to Student</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/rooms/allocate}" method="post">
+                    <div class="modal-body row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Select Student <span class="text-danger">*</span></label>
+                            <select name="studentId" class="form-select" required>
+                                <option th:each="s : ${students}" th:value="${s.id}" th:text="${s.studentCode} + ' - ' + ${s.fullName}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Select Room <span class="text-danger">*</span></label>
+                            <select name="roomId" class="form-select" required>
+                                <option th:each="r : ${rooms}" th:if="${r.status.name() != 'FULL' && r.status.name() != 'MAINTENANCE' && !r.isFull()}" th:value="${r.id}" th:text="${r.roomNumber} + ' (' + ${r.block} + ' - ' + ${r.roomType} + ' - Occupancy: ' + ${r.currentOccupancy} + '/' + ${r.capacity} + ')'"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label small fw-semibold text-muted">Allocation Notes</label>
+                            <input type="text" name="notes" class="form-control" placeholder="Optional allocation notes">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success"><i class="bi bi-check2-circle me-1"></i>Allocate Room</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

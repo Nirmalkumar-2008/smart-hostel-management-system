@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Room - Student Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/styles.css}">
+</head>
+<body>
+    <!-- CATEGORIZED SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <i class="bi bi-mortarboard"></i> <span>Student Portal</span>
+        </div>
+        <div class="sidebar-nav">
+            <div class="sidebar-category-header">MAIN</div>
+            <a th:href="@{/student/dashboard}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            
+            <div class="sidebar-category-header">HOSTEL MANAGEMENT</div>
+            <a th:href="@{/student/profile}"><i class="bi bi-person"></i> My Profile</a>
+            <a th:href="@{/student/room}" class="active"><i class="bi bi-door-open"></i> My Room</a>
+            
+            <div class="sidebar-category-header">SERVICES</div>
+            <a th:href="@{/student/leave}"><i class="bi bi-calendar-event"></i> Apply Leave</a>
+            <a th:href="@{/student/complaints}"><i class="bi bi-exclamation-octagon"></i> Complaints</a>
+            <a th:href="@{/student/medical}"><i class="bi bi-heart-pulse"></i> Medical Request</a>
+            <a th:href="@{/student/fees}"><i class="bi bi-cash-stack"></i> My Fees</a>
+            <a th:href="@{/student/notices}"><i class="bi bi-megaphone"></i> Notice Board</a>
+            
+            <div class="sidebar-category-header">SMART FEATURES</div>
+            <a th:href="@{/student/lost-found}"><i class="bi bi-search"></i> Lost & Found</a>
+            <a th:href="@{/student/mess}"><i class="bi bi-cup-hot"></i> Smart Mess</a>
+            <a th:href="@{/student/notifications}"><i class="bi bi-bell"></i> Notifications</a>
+        </div>
+        <div class="sidebar-footer">
+            <form th:action="@{/logout}" method="post" class="m-0">
+                <button type="submit" class="btn btn-outline-danger btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="main-wrapper">
+        <div class="top-nav">
+            <div>
+                <h4 class="fw-bold mb-0">My Room Allocation</h4>
+                <p class="text-muted small mb-0">Room Details & Roommates Roster</p>
+            </div>
+            <button type="button" class="theme-toggle-btn">
+                <i class="bi bi-moon-stars-fill text-primary"></i>
+                <span class="theme-label small">Dark Mode</span>
+            </button>
+        </div>
+
+        <div th:if="${allocation == null}" class="glass-card p-5 text-center">
+            <i class="bi bi-door-closed fs-1 text-warning d-block mb-3"></i>
+            <h4 class="fw-bold text-white mb-2">No Room Currently Allocated</h4>
+            <p class="text-muted">You are currently on the hostel waiting list. Contact administration for assistance.</p>
+        </div>
+
+        <div th:if="${allocation != null}" class="row g-4">
+            <div class="col-md-6">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-building me-2 text-primary"></i>Room Specifications</h5>
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                            <span>Room Number:</span>
+                            <strong class="text-primary fs-5" th:text="${room.roomNumber}">A101</strong>
+                        </li>
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                            <span>Block & Floor:</span>
+                            <strong th:text="${room.block} + ' (Floor ' + ${room.floor} + ')'">Block A (Floor 1)</strong>
+                        </li>
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                            <span>Room Type:</span>
+                            <strong th:text="${room.roomType}">DOUBLE</strong>
+                        </li>
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                            <span>Occupancy Capacity:</span>
+                            <strong th:text="${room.currentOccupancy} + ' / ' + ${room.capacity}">2 / 2</strong>
+                        </li>
+                        <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                            <span>Monthly Base Rent:</span>
+                            <strong class="text-success" th:text="'₹' + ${#numbers.formatDecimal(room.baseMonthlyRent, 1, 'COMMA', 2, 'POINT')}">₹5000</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="glass-card p-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-people me-2 text-info"></i>Assigned Roommates</h5>
+                    <div th:each="r : ${roommates}" class="d-flex align-items-center gap-3 border-bottom border-secondary pb-3 mb-3">
+                        <div class="stat-icon-wrapper bg-icon-primary" style="width:48px; height:48px;"><i class="bi bi-person"></i></div>
+                        <div>
+                            <h6 class="fw-bold text-white mb-0" th:text="${r.fullName}">Roommate Name</h6>
+                            <small class="text-muted" th:text="${r.studentCode} + ' | ' + ${r.course}">STU1002 | CS</small><br>
+                            <small class="text-secondary"><i class="bi bi-telephone me-1"></i><span th:text="${r.phone}">Phone</span></small>
+                        </div>
+                    </div>
+                    <div th:if="${roommates.isEmpty()}" class="text-muted text-center py-3">No other roommates assigned yet.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
