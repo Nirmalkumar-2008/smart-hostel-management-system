@@ -1,35 +1,36 @@
 # Smart Hostel Management System
 
-A Java 21 console application that simplifies hostel administration through student management, room allocation, complaint handling, fee tracking, smart Lost & Found matching, meal demand prediction, and food waste management.
+A web-based hostel management application built using **Java 21, Spring Boot, Spring Security, MySQL, and Thymeleaf**. The system streamlines hostel administration through student management, room allocation, leave applications, complaint tracking, fee management, and intelligent hostel services.
 
 ## Features
 
 ### Admin Module
-- Manage student and room details.
+- Manage student details and hostel rooms.
 - Allocate rooms with capacity validation.
-- Manage leave applications and waiting lists.
-- Track complaints and prioritize them by severity.
+- Manage room-upgrade waiting lists.
+- Review, approve, or reject leave applications.
+- Monitor complaints and their priority levels.
 - Manage medical requests, fees, and payments.
 - Publish notices and send notifications.
-- Review Lost & Found matches.
-- Monitor mess attendance and meal demand.
-- Track food waste and view hostel reports.
+- Review Lost & Found matches and manage returned items.
+- Monitor meal attendance and predict meal demand.
+- Track food preparation, consumption, and waste.
+- View reports on occupancy, complaints, leave requests, and outstanding fees.
 
 ### Student Module
 - View and update profile information.
 - View room assignments and roommates.
-- Apply for leave and track approval status.
+- Apply for leave and track application status.
 - Submit complaints and medical requests.
-- View fee details and payment balances.
+- View fee details, payments, and outstanding balances.
 - Access notices and notifications.
-- Report lost or found items.
+- Report lost or found items and view potential matches.
 - Record breakfast, lunch, and dinner attendance.
 
-## Smart Algorithms
+## Smart Features
 
-**1. Lost & Found Matching**
-
-Calculates a weighted similarity score using seven attributes:
+### 1. Smart Lost & Found Matching
+Calculates a weighted similarity score between lost and found item reports using seven attributes.
 
 | Attribute | Weight |
 |---|---:|
@@ -41,9 +42,8 @@ Calculates a weighted similarity score using seven attributes:
 | Location | 10% |
 | Date Proximity | 5% |
 
-**2. Meal Demand Prediction**
-
-Uses a weighted moving average of historical attendance, adjusted by the current hostel occupancy ratio.
+### 2. Smart Meal Demand Prediction
+Uses a weighted moving average of historical attendance, adjusted for current hostel occupancy, to estimate meal demand.
 
 ```text
 Predicted Demand =
@@ -52,7 +52,8 @@ Predicted Demand =
   + (0.20 × Day 3 Attendance)
 ```
 
-**3. Food Waste Calculation**
+### 3. Food Waste Management
+Calculates the estimated percentage of prepared meals that remain unused.
 
 ```text
 Waste Percentage =
@@ -60,22 +61,25 @@ Waste Percentage =
     / Prepared Headcount) × 100
 ```
 
-**4. Room Recommendation**
+### 4. Smart Room Recommendations
+Recommends suitable rooms based on room-scoring logic, gender compatibility, and capacity validation.
 
-Recommends suitable rooms based on the implemented room-scoring logic, gender compatibility, and capacity validation.
-
-**5. Complaint Prioritization**
-
-Assigns calculated priority levels: `CRITICAL`, `HIGH`, `MEDIUM`, and `LOW`.
+### 5. Complaint Prioritization
+Automatically categorizes complaints into `CRITICAL`, `HIGH`, `MEDIUM`, and `LOW` priority levels.
 
 ## Technology Stack
 
-- **Language:** Java 21
-- **Build Tool:** Maven 3.9+
-- **Database:** MySQL 8+
-- **Database Connectivity:** JDBC
-- **MySQL Driver:** MySQL Connector/J 8.3.0
-- **Testing:** JUnit 5 and Mockito
+| Technology | Purpose |
+|---|---|
+| Java 21 | Backend development |
+| Spring Boot | Application framework |
+| Spring Security | Authentication and authorization |
+| HTML, CSS, JavaScript | Frontend development |
+| Thymeleaf | Server-side HTML rendering |
+| MySQL | Relational database |
+| Spring Data JPA / Hibernate | Database persistence and ORM |
+| Maven | Build and dependency management |
+| JUnit 5 & Mockito | Automated testing |
 
 ## Prerequisites
 
@@ -85,42 +89,52 @@ Assigns calculated priority levels: `CRITICAL`, `HIGH`, `MEDIUM`, and `LOW`.
 
 ## Installation and Setup
 
-**1. Clone the repository**
+### 1. Clone the Repository
 
 ```bash
 git clone <YOUR_GITHUB_REPOSITORY_URL>
 cd <YOUR_PROJECT_DIRECTORY>
 ```
 
-**2. Configure the database**
+### 2. Configure the Database
 
-Update `src/main/resources/config.properties` with your local MySQL connection details. Keep database credentials private and never commit real passwords to GitHub.
+Create or configure the MySQL database according to your project schema.
 
-**3. Run tests**
+Update the database connection settings in `src/main/resources/application.properties` or your project's actual configuration file.
 
-```bash
-mvn clean test
+Example:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/hostel_management_db
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 ```
 
-**4. Build the application**
+Configure the environment variables or use the configuration mechanism supported by your application. Never commit real database credentials to GitHub.
+
+### 3. Build the Application
 
 ```bash
 mvn clean package
 ```
 
-**5. Run the application**
-
-Use the executable JAR generated in the `target` directory. For example, if your build produces the following file:
+### 4. Run the Application
 
 ```bash
-java -jar target/hostel-management-system-1.0.0-jar-with-dependencies.jar
+mvn spring-boot:run
 ```
 
-Ensure the filename matches your actual Maven build output.
+Alternatively, run the executable JAR generated in the `target` directory:
+
+```bash
+java -jar target/<generated-jar-name>.jar
+```
+
+Open the local URL and port configured by your Spring Boot application in your browser.
 
 ## Testing
 
-Run the automated test suite using JUnit 5 and Mockito:
+Run the automated test suite using:
 
 ```bash
 mvn clean test
@@ -130,8 +144,8 @@ mvn clean test
 
 **Nirmal Kumar**
 
-B.Tech Computer Science and Business Systems (CSBS), Chennai Institute of Technology.
+B.Tech Computer Science and Business Systems (CSBS)  
+Chennai Institute of Technology
 
-- [GitHub](https://github.com/Nirmalkumar-2008)
-- [LinkedIn](https://www.linkedin.com/in/nirmal-kumar-er)
-
+- GitHub: [Nirmalkumar-2008](https://github.com/Nirmalkumar-2008)
+- LinkedIn: [Nirmal Kumar](https://www.linkedin.com/in/nirmal-kumar-er)
